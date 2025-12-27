@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      i2c-bus:
+        specifier: ^5.2.3
+        version: 5.2.3
       oled-font-5x7:
         specifier: ^1.0.3
         version: 1.0.3
@@ -27,9 +30,6 @@ importers:
       '@types/systeminformation':
         specifier: ^3.54.1
         version: 3.54.1
-      i2c-bus:
-        specifier: ^5.2.3
-        version: 5.2.3
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@20.19.27)(typescript@5.9.3)
