@@ -1,0 +1,23 @@
+{
+  "name": "pi-i2c-status",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "oled-font-5x7": "^1.0.3",
+    "oled-i2c-bus": "^1.0.12",
+    "systeminformation": "^5.21.22"
+  },
+  "devDependencies": {
+    "@types/i2c-bus": "^5.1.2",
+    "@types/node": "^20.0.0",
+    "@types/systeminformation": "^3.54.1",
+    "i2c-bus": "^5.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@10.18.3"
+}

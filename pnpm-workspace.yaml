@@ -1,0 +1,2 @@
+onlyBuiltDependencies:
+  - i2c-bus
