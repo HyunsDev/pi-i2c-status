@@ -1,44 +1,43 @@
-# 1. 빌드 스테이지
-FROM node:20-slim AS builder
+# --------------------------------------------------------
+# 1. 빌드 스테이지 (필요한 도구 다 설치해서 빌드)
+# --------------------------------------------------------
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # pnpm 활성화
 RUN corepack enable
 
-# 네이티브 모듈(i2c-bus) 빌드 도구 설치
-RUN apt-get update && apt-get install -y python3 make g++
+# 빌드에 필요한 도구 설치 (Alpine 패키지 관리자 apk 사용)
+# python3, make, g++: i2c-bus 네이티브 모듈 컴파일용
+# linux-headers: 하드웨어 접근용 헤더
+RUN apk add --no-cache python3 make g++ linux-headers
 
-# 패키지 파일 복사 (pnpm-lock.yaml 포함)
+# 의존성 설치
 COPY package.json pnpm-lock.yaml ./
-
-# 의존성 설치 (npm ci 대신 사용)
 RUN pnpm install --frozen-lockfile
 
-# 소스 복사 및 빌드
+# 소스 빌드
 COPY . .
 RUN pnpm run build
 
-# 2. 실행 스테이지
-FROM node:20-slim
+# 프로덕션용 node_modules만 남기기 (개발 의존성 제거)
+RUN pnpm prune --prod
+
+# --------------------------------------------------------
+# 2. 실행 스테이지 (최소한의 파일만 복사)
+# --------------------------------------------------------
+FROM node:20-alpine
 WORKDIR /app
 
-# pnpm 활성화
-RUN corepack enable
-
-# 런타임에 필요한 네이티브 빌드 도구 및 I2C 툴 설치
-# (i2c-bus가 런타임 설치 시 재빌드될 수 있으므로 빌드 도구 유지)
-RUN apt-get update && apt-get install -y python3 make g++ i2c-tools
-
-# 프로덕션 의존성만 설치하기 위해 패키지 파일 복사
-COPY package.json pnpm-lock.yaml ./
-
-# 프로덕션 의존성만 설치 (--prod)
-RUN pnpm install --prod --frozen-lockfile
+# 실행 시 하드웨어 디버깅용 툴만 설치 (아주 작음)
+# (파이썬, 컴파일러 등 무거운 건 뺌)
+RUN apk add --no-cache i2c-tools
 
 # 빌드 결과물 복사
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
-# 환경변수 설정
 ENV NODE_ENV=production
 
 CMD ["node", "dist/index.js"]
